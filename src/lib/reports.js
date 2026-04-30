@@ -9,7 +9,7 @@ export function generateStockReport(state) {
 
   for (const [divKey, divData] of Object.entries(state.divisions)) {
     const divName = divKey === 'vintage' ? 'Vintage Lighting' : 'Incredible'
-    const rows = [['Category', 'Product', 'Current Stock', 'Original Stock', 'Status']]
+    const rows = [['Category', 'Product', 'Store Stock', 'Display Pieces', 'Original Stock', 'Status']]
 
     for (const cat of divData.categories) {
       for (const prod of cat.products) {
@@ -17,6 +17,7 @@ export function generateStockReport(state) {
           cat.name,
           prod.name,
           prod.qty,
+          prod.display || 0,
           prod.original,
           prod.qty <= 5 ? 'LOW STOCK' : 'OK'
         ])
@@ -27,6 +28,7 @@ export function generateStockReport(state) {
     ws['!cols'] = [
       { wch: 26 },
       { wch: 30 },
+      { wch: 13 },
       { wch: 15 },
       { wch: 15 },
       { wch: 12 },
@@ -42,10 +44,17 @@ export function generateStockReport(state) {
 
 export function generateDispatchReport(log) {
   const wb = XLSX.utils.book_new()
-  const rows = [['Date / Time', 'Product', 'Division', 'Qty Dispatched', 'Qty Remaining']]
+  const rows = [['Date / Time', 'Product', 'Division', 'Source', 'Qty Dispatched', 'Qty Remaining']]
 
   for (const entry of log) {
-    rows.push([entry.time, entry.productName, entry.division, entry.qtyDispatched, entry.qtyRemaining])
+    rows.push([
+      entry.time,
+      entry.productName,
+      entry.division,
+      entry.source === 'display' ? 'Display Item' : 'Store',
+      entry.qtyDispatched,
+      entry.qtyRemaining
+    ])
   }
 
   const ws = XLSX.utils.aoa_to_sheet(rows)
@@ -53,6 +62,7 @@ export function generateDispatchReport(log) {
     { wch: 20 },
     { wch: 30 },
     { wch: 20 },
+    { wch: 14 },
     { wch: 15 },
     { wch: 15 },
   ]

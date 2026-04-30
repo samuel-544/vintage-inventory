@@ -68,7 +68,8 @@ export function reducer(state, action) {
                   name: action.name,
                   qty: action.qty,
                   original: action.qty,
-                  low: action.low
+                  low: action.low,
+                  display: action.display || 0
                 }]
               }
             )
@@ -115,6 +116,7 @@ export function reducer(state, action) {
         division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
         qtyDispatched: action.qty,
         qtyRemaining: dispatchedProduct.qty,
+        source: 'store',
         time: new Date().toLocaleString('en-KE', {
           day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
         })
@@ -126,6 +128,41 @@ export function reducer(state, action) {
           [state.division]: { categories: newCats }
         },
         log: [logEntry, ...state.log].slice(0, 100)
+      }
+    }
+
+    case 'DISPATCH_DISPLAY': {
+      const div = state.divisions[state.division]
+      let dispatchedProduct = null
+      const newCats = div.categories.map(c =>
+        c.id !== action.catId ? c : {
+          ...c,
+          products: c.products.map(p => {
+            if (p.id !== action.prodId) return p
+            dispatchedProduct = { ...p, display: p.display - action.qty }
+            return dispatchedProduct
+          })
+        }
+      )
+      if (!dispatchedProduct) return state
+      const displayLogEntry = {
+        id: action.logId || uid(),
+        productName: dispatchedProduct.name,
+        division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+        qtyDispatched: action.qty,
+        qtyRemaining: dispatchedProduct.display,
+        source: 'display',
+        time: new Date().toLocaleString('en-KE', {
+          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+        })
+      }
+      return {
+        ...state,
+        divisions: {
+          ...state.divisions,
+          [state.division]: { categories: newCats }
+        },
+        log: [displayLogEntry, ...state.log].slice(0, 100)
       }
     }
 
@@ -187,7 +224,8 @@ async function syncToSupabase(action, preState) {
         name: action.name,
         qty: action.qty,
         original_qty: action.qty,
-        low_threshold: action.low
+        low_threshold: action.low,
+        display_qty: action.display || 0
       })
       break
 
@@ -206,7 +244,26 @@ async function syncToSupabase(action, preState) {
           product_name: product.name,
           division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
           qty_dispatched: action.qty,
-          qty_remaining: newQty
+          qty_remaining: newQty,
+          source: 'store'
+        })
+      ])
+      break
+    }
+
+    case 'DISPATCH_DISPLAY': {
+      const product = findProduct(preState, action.catId, action.prodId)
+      if (!product) break
+      const newDisplay = product.display - action.qty
+      await Promise.all([
+        supabase.from('products').update({ display_qty: newDisplay }).eq('id', action.prodId),
+        supabase.from('dispatch_log').insert({
+          product_id: action.prodId,
+          product_name: product.name,
+          division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qty_dispatched: action.qty,
+          qty_remaining: newDisplay,
+          source: 'display'
         })
       ])
       break
@@ -302,7 +359,8 @@ export function useInventory() {
                 name: p.name,
                 qty: p.qty,
                 original: p.original_qty,
-                low: p.low_threshold
+                low: p.low_threshold,
+                display: p.display_qty || 0
               }))
           }))
       })
@@ -321,6 +379,7 @@ export function useInventory() {
             division: e.division,
             qtyDispatched: e.qty_dispatched,
             qtyRemaining: e.qty_remaining,
+            source: e.source || 'store',
             time: new Date(e.dispatched_at).toLocaleString('en-KE', {
               day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
             })

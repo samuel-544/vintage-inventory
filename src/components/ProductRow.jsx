@@ -3,9 +3,12 @@ import { useState } from 'react'
 export function ProductRow({ product, catId, dispatch }) {
   const [dispatchQty, setDispatchQty] = useState('')
   const [restockQty, setRestockQty] = useState('')
+  const [displayDispatchQty, setDisplayDispatchQty] = useState('')
   const [dispatchError, setDispatchError] = useState('')
   const [restockError, setRestockError] = useState('')
+  const [displayDispatchError, setDisplayDispatchError] = useState('')
   const [showRestock, setShowRestock] = useState(false)
+  const [showDisplayDispatch, setShowDisplayDispatch] = useState(false)
   const isLow = product.qty <= 5
 
   function handleDispatch() {
@@ -26,6 +29,16 @@ export function ProductRow({ product, catId, dispatch }) {
     setShowRestock(false)
   }
 
+  function handleDisplayDispatch() {
+    const qty = parseInt(displayDispatchQty)
+    if (!qty || qty <= 0) { setDisplayDispatchError('Enter a valid quantity'); return }
+    if (qty > product.display) { setDisplayDispatchError(`Only ${product.display} on display`); return }
+    dispatch({ type: 'DISPATCH_DISPLAY', catId, prodId: product.id, qty })
+    setDisplayDispatchQty('')
+    setDisplayDispatchError('')
+    setShowDisplayDispatch(false)
+  }
+
   return (
     <div className={`product-row ${isLow ? 'low' : ''}`}>
       <div className="prod-info">
@@ -35,7 +48,13 @@ export function ProductRow({ product, catId, dispatch }) {
 
       <div className="qty-block">
         <span className={`qty-num ${isLow ? 'low' : ''}`}>{product.qty}</span>
-        <span className="qty-sub">in stock</span>
+        <span className="qty-sub">in store</span>
+        {product.display > 0 && (
+          <>
+            <span className="qty-num display-qty">{product.display}</span>
+            <span className="qty-sub">on display</span>
+          </>
+        )}
       </div>
 
       <div className="prod-actions">
@@ -59,6 +78,32 @@ export function ProductRow({ product, catId, dispatch }) {
         >
           {showRestock ? 'Cancel' : '+ Restock'}
         </button>
+
+        {product.display > 0 && (
+          <button
+            className="btn-display-toggle"
+            onClick={() => { setShowDisplayDispatch(v => !v); setDisplayDispatchError('') }}
+          >
+            {showDisplayDispatch ? 'Cancel' : 'Dispatch Display'}
+          </button>
+        )}
+
+        {showDisplayDispatch && product.display > 0 && (
+          <div className="restock-area">
+            <input
+              type="number"
+              min="1"
+              placeholder="qty"
+              value={displayDispatchQty}
+              className={displayDispatchError ? 'input-error' : ''}
+              onChange={e => { setDisplayDispatchQty(e.target.value); setDisplayDispatchError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleDisplayDispatch()}
+              autoFocus
+            />
+            <button className="btn-display-confirm" onClick={handleDisplayDispatch}>Confirm</button>
+            {displayDispatchError && <span className="error-msg">{displayDispatchError}</span>}
+          </div>
+        )}
 
         {showRestock && (
           <div className="restock-area">

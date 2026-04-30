@@ -8,13 +8,14 @@ create table if not exists categories (
 );
 
 create table if not exists products (
-  id           text        primary key,
-  category_id  text        references categories(id) on delete cascade,
-  name         text        not null,
-  qty          integer     not null default 0,
-  original_qty integer     not null default 0,
-  low_threshold integer    not null default 5,
-  created_at   timestamptz default now()
+  id            text        primary key,
+  category_id   text        references categories(id) on delete cascade,
+  name          text        not null,
+  qty           integer     not null default 0,
+  original_qty  integer     not null default 0,
+  low_threshold integer     not null default 5,
+  display_qty   integer     not null default 0,
+  created_at    timestamptz default now()
 );
 
 create table if not exists dispatch_log (
@@ -24,6 +25,7 @@ create table if not exists dispatch_log (
   division      text        not null,
   qty_dispatched integer    not null,
   qty_remaining  integer    not null,
+  source         text        not null default 'store',
   dispatched_at  timestamptz default now()
 );
 
