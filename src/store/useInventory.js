@@ -330,7 +330,7 @@ export function useInventory() {
       })
     } catch (err) {
       console.error('Failed to load from Supabase:', err)
-      setSyncError('Could not connect to database. Check your connection.')
+      setSyncError('Error: ' + (err?.message || JSON.stringify(err)))
     } finally {
       setLoading(false)
     }
