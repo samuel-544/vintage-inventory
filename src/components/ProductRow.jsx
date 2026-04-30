@@ -6,7 +6,7 @@ export function ProductRow({ product, catId, dispatch }) {
   const [dispatchError, setDispatchError] = useState('')
   const [restockError, setRestockError] = useState('')
   const [showRestock, setShowRestock] = useState(false)
-  const isLow = product.qty <= product.low
+  const isLow = product.qty <= 5
 
   function handleDispatch() {
     const qty = parseInt(dispatchQty)

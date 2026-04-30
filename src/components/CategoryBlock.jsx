@@ -5,7 +5,6 @@ export function CategoryBlock({ category, dispatch }) {
   const [open, setOpen] = useState(true)
   const [prodName, setProdName] = useState('')
   const [prodQty, setProdQty] = useState('')
-  const [prodLow, setProdLow] = useState('')
   const [formError, setFormError] = useState('')
   const [showForm, setShowForm] = useState(false)
 
@@ -13,12 +12,9 @@ export function CategoryBlock({ category, dispatch }) {
     if (!prodName.trim()) { setFormError('Product name is required'); return }
     const qty = parseInt(prodQty)
     if (isNaN(qty) || qty < 0) { setFormError('Enter a valid stock count'); return }
-    const low = parseInt(prodLow)
-    if (isNaN(low) || low < 0) { setFormError('Enter a valid low-stock threshold'); return }
-    dispatch({ type: 'ADD_PRODUCT', catId: category.id, name: prodName.trim(), qty, low })
+    dispatch({ type: 'ADD_PRODUCT', catId: category.id, name: prodName.trim(), qty, low: 5 })
     setProdName('')
     setProdQty('')
-    setProdLow('')
     setFormError('')
     setShowForm(false)
   }
@@ -62,13 +58,6 @@ export function CategoryBlock({ category, dispatch }) {
                 placeholder="Initial stock"
                 value={prodQty}
                 onChange={e => { setProdQty(e.target.value); setFormError('') }}
-              />
-              <input
-                type="number"
-                min="0"
-                placeholder="Low-stock threshold"
-                value={prodLow}
-                onChange={e => { setProdLow(e.target.value); setFormError('') }}
               />
               {formError && <span className="error-msg">{formError}</span>}
               <div className="form-buttons">

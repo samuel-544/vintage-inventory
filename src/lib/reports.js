@@ -9,7 +9,7 @@ export function generateStockReport(state) {
 
   for (const [divKey, divData] of Object.entries(state.divisions)) {
     const divName = divKey === 'vintage' ? 'Vintage Lighting' : 'Incredible'
-    const rows = [['Category', 'Product', 'Current Stock', 'Original Stock', 'Low Threshold', 'Status']]
+    const rows = [['Category', 'Product', 'Current Stock', 'Original Stock', 'Status']]
 
     for (const cat of divData.categories) {
       for (const prod of cat.products) {
@@ -18,8 +18,7 @@ export function generateStockReport(state) {
           prod.name,
           prod.qty,
           prod.original,
-          prod.low,
-          prod.qty <= prod.low ? 'LOW STOCK' : 'OK'
+          prod.qty <= 5 ? 'LOW STOCK' : 'OK'
         ])
       }
     }
@@ -28,7 +27,6 @@ export function generateStockReport(state) {
     ws['!cols'] = [
       { wch: 26 },
       { wch: 30 },
-      { wch: 15 },
       { wch: 15 },
       { wch: 15 },
       { wch: 12 },

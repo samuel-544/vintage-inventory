@@ -19,7 +19,7 @@ export default function App() {
   })).filter(cat => !state.search || cat.products.length > 0)
 
   const allProducts = currentDiv.categories.flatMap(c => c.products)
-  const lowCount = allProducts.filter(p => p.qty <= p.low).length
+  const lowCount = allProducts.filter(p => p.qty <= 5).length
 
   function handleAddCategory() {
     if (newCatName.trim()) {
