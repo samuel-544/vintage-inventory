@@ -246,12 +246,14 @@ async function seedDatabase() {
 export function useInventory() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [loading, setLoading] = useState(true)
+  const [loadingMsg, setLoadingMsg] = useState('Connecting to database…')
   const [syncError, setSyncError] = useState(null)
 
   useEffect(() => { loadFromSupabase() }, [])
 
   async function loadFromSupabase() {
     setLoading(true)
+    setLoadingMsg('Connecting to database…')
     try {
       const [
         { data: cats,  error: e1 },
@@ -266,7 +268,9 @@ export function useInventory() {
       if (e1 || e2 || e3) throw e1 || e2 || e3
 
       if (!cats || cats.length === 0) {
+        setLoadingMsg('First-time setup — loading your stock data into the database…')
         await seedDatabase()
+        setLoadingMsg('Almost done…')
         await loadFromSupabase()
         return
       }
@@ -335,5 +339,5 @@ export function useInventory() {
     }
   }, [state])
 
-  return { state, dispatch: syncedDispatch, loading, syncError }
+  return { state, dispatch: syncedDispatch, loading, loadingMsg, syncError }
 }

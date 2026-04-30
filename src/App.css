@@ -444,6 +444,12 @@ input.input-error { border-color: var(--danger); }
   background: var(--bg);
 }
 
+.loading-sub {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-top: -8px;
+}
+
 .loading-spinner {
   width: 36px;
   height: 36px;

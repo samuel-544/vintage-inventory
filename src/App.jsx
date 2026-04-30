@@ -6,7 +6,7 @@ import { DispatchLog } from './components/DispatchLog'
 import './App.css'
 
 export default function App() {
-  const { state, dispatch, loading, syncError } = useInventory()
+  const { state, dispatch, loading, loadingMsg, syncError } = useInventory()
   const [newCatName, setNewCatName] = useState('')
   const currentDiv = state.divisions[state.division]
 
@@ -30,7 +30,8 @@ export default function App() {
   if (loading) return (
     <div className="loading-screen">
       <div className="loading-spinner" />
-      <p>Loading inventory…</p>
+      <p>{loadingMsg}</p>
+      <p className="loading-sub">This may take a moment on first load.</p>
     </div>
   )
 
