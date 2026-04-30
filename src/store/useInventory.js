@@ -239,8 +239,16 @@ async function seedDatabase() {
       }
     }
   }
-  await supabase.from('categories').insert(catRows)
-  await supabase.from('products').insert(prodRows)
+
+  const { error: catErr } = await supabase.from('categories').insert(catRows)
+  if (catErr) throw new Error('Failed to seed categories: ' + catErr.message)
+
+  // Insert products in batches of 50 to avoid request size limits
+  for (let i = 0; i < prodRows.length; i += 50) {
+    const batch = prodRows.slice(i, i + 50)
+    const { error: prodErr } = await supabase.from('products').insert(batch)
+    if (prodErr) throw new Error('Failed to seed products: ' + prodErr.message)
+  }
 }
 
 export function useInventory() {
@@ -255,7 +263,7 @@ export function useInventory() {
     setLoading(true)
     setLoadingMsg('Connecting to database…')
     try {
-      const [
+      let [
         { data: cats,  error: e1 },
         { data: prods, error: e2 },
         { data: log,   error: e3 }
@@ -268,11 +276,17 @@ export function useInventory() {
       if (e1 || e2 || e3) throw e1 || e2 || e3
 
       if (!cats || cats.length === 0) {
-        setLoadingMsg('First-time setup — loading your stock data into the database…')
+        setLoadingMsg('First-time setup — saving your stock data to the database…')
         await seedDatabase()
-        setLoadingMsg('Almost done…')
-        await loadFromSupabase()
-        return
+        setLoadingMsg('Almost done — fetching inventory…')
+        // Re-fetch after seeding (not recursive — seeded flag prevents loop)
+        const { data: seededCats } = await supabase.from('categories').select('*').order('created_at')
+        const { data: seededProds } = await supabase.from('products').select('*').order('created_at')
+        if (!seededCats || seededCats.length === 0) {
+          throw new Error('Seeding completed but tables are still empty. Check Supabase RLS settings.')
+        }
+        cats  = seededCats
+        prods = seededProds || []
       }
 
       const buildDivision = (divName) => ({
