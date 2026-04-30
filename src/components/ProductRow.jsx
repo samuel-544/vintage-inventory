@@ -1,0 +1,90 @@
+import { useState } from 'react'
+
+export function ProductRow({ product, catId, dispatch }) {
+  const [dispatchQty, setDispatchQty] = useState('')
+  const [restockQty, setRestockQty] = useState('')
+  const [dispatchError, setDispatchError] = useState('')
+  const [restockError, setRestockError] = useState('')
+  const [showRestock, setShowRestock] = useState(false)
+  const isLow = product.qty <= product.low
+
+  function handleDispatch() {
+    const qty = parseInt(dispatchQty)
+    if (!qty || qty <= 0) { setDispatchError('Enter a valid quantity'); return }
+    if (qty > product.qty) { setDispatchError(`Only ${product.qty} in stock`); return }
+    dispatch({ type: 'DISPATCH', catId, prodId: product.id, qty })
+    setDispatchQty('')
+    setDispatchError('')
+  }
+
+  function handleRestock() {
+    const qty = parseInt(restockQty)
+    if (!qty || qty <= 0) { setRestockError('Enter a valid quantity'); return }
+    dispatch({ type: 'RESTOCK', catId, prodId: product.id, qty })
+    setRestockQty('')
+    setRestockError('')
+    setShowRestock(false)
+  }
+
+  return (
+    <div className={`product-row ${isLow ? 'low' : ''}`}>
+      <div className="prod-info">
+        <span className="prod-name">{product.name}</span>
+        {isLow && <span className="low-badge">Low Stock</span>}
+      </div>
+
+      <div className="qty-block">
+        <span className={`qty-num ${isLow ? 'low' : ''}`}>{product.qty}</span>
+        <span className="qty-sub">in stock</span>
+      </div>
+
+      <div className="prod-actions">
+        <div className="dispatch-area">
+          <input
+            type="number"
+            min="1"
+            placeholder="qty"
+            value={dispatchQty}
+            className={dispatchError ? 'input-error' : ''}
+            onChange={e => { setDispatchQty(e.target.value); setDispatchError('') }}
+            onKeyDown={e => e.key === 'Enter' && handleDispatch()}
+          />
+          <button className="btn-dispatch" onClick={handleDispatch}>Dispatch</button>
+          {dispatchError && <span className="error-msg">{dispatchError}</span>}
+        </div>
+
+        <button
+          className="btn-restock-toggle"
+          onClick={() => { setShowRestock(v => !v); setRestockError('') }}
+        >
+          {showRestock ? 'Cancel' : '+ Restock'}
+        </button>
+
+        {showRestock && (
+          <div className="restock-area">
+            <input
+              type="number"
+              min="1"
+              placeholder="qty"
+              value={restockQty}
+              className={restockError ? 'input-error' : ''}
+              onChange={e => { setRestockQty(e.target.value); setRestockError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleRestock()}
+              autoFocus
+            />
+            <button className="btn-restock" onClick={handleRestock}>Confirm</button>
+            {restockError && <span className="error-msg">{restockError}</span>}
+          </div>
+        )}
+      </div>
+
+      <button
+        className="btn-remove"
+        onClick={() => dispatch({ type: 'DELETE_PRODUCT', catId, prodId: product.id })}
+        title="Remove product"
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
