@@ -3,6 +3,7 @@ import { useInventory } from './store/useInventory'
 import { StatsBar } from './components/StatsBar'
 import { CategoryBlock } from './components/CategoryBlock'
 import { DispatchLog } from './components/DispatchLog'
+import { ReportsBar } from './components/ReportsBar'
 import './App.css'
 
 export default function App() {
@@ -83,6 +84,8 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        <ReportsBar state={state} />
 
         {filtered.length === 0 && !state.search && (
           <div className="empty-state">
