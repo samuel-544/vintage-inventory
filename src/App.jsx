@@ -6,17 +6,32 @@ import { DispatchLog } from './components/DispatchLog'
 import { ReportsBar } from './components/ReportsBar'
 import './App.css'
 
+function SearchIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+  )
+}
+
 export default function App() {
   const { state, dispatch, loading, loadingMsg, syncError } = useInventory()
   const [newCatName, setNewCatName] = useState('')
+  const [catSearch, setCatSearch] = useState('')
   const currentDiv = state.divisions[state.division]
 
-  const filtered = currentDiv.categories.map(cat => ({
-    ...cat,
-    products: cat.products.filter(p =>
-      !state.search || p.name.toLowerCase().includes(state.search.toLowerCase())
+  const filtered = currentDiv.categories
+    .filter(cat =>
+      !catSearch || cat.name.toLowerCase().includes(catSearch.toLowerCase())
     )
-  })).filter(cat => !state.search || cat.products.length > 0)
+    .map(cat => ({
+      ...cat,
+      products: cat.products.filter(p =>
+        !state.search || p.name.toLowerCase().includes(state.search.toLowerCase())
+      )
+    }))
+    .filter(cat => !state.search || cat.products.length > 0)
 
   const allProducts = currentDiv.categories.flatMap(c => c.products)
   const lowCount = allProducts.filter(p => p.qty <= 5).length
@@ -65,12 +80,38 @@ export default function App() {
         />
 
         <div className="toolbar">
-          <input
-            className="search-input"
-            placeholder="Search products…"
-            value={state.search}
-            onChange={e => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
-          />
+          <div className="search-field">
+            <input
+              placeholder="Search by item code…"
+              value={state.search}
+              onChange={e => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
+              onKeyDown={e => e.key === 'Escape' && dispatch({ type: 'SET_SEARCH', value: '' })}
+            />
+            <button
+              className="btn-search-icon"
+              onClick={() => dispatch({ type: 'SET_SEARCH', value: state.search })}
+              title="Search"
+            >
+              <SearchIcon />
+            </button>
+          </div>
+
+          <div className="search-field">
+            <input
+              placeholder="Search by category…"
+              value={catSearch}
+              onChange={e => setCatSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Escape' && setCatSearch('')}
+            />
+            <button
+              className="btn-search-icon"
+              onClick={() => setCatSearch(catSearch)}
+              title="Search"
+            >
+              <SearchIcon />
+            </button>
+          </div>
+
           <div className="add-cat-row">
             <input
               className="cat-input"
@@ -87,16 +128,28 @@ export default function App() {
 
         <ReportsBar state={state} />
 
-        {filtered.length === 0 && !state.search && (
+        {filtered.length === 0 && !state.search && !catSearch && (
           <div className="empty-state">
             <p>No categories yet.</p>
             <p>Add your first category above to get started.</p>
           </div>
         )}
 
-        {filtered.length === 0 && state.search && (
+        {filtered.length === 0 && catSearch && !state.search && (
+          <div className="empty-state">
+            <p>No categories match &ldquo;<strong>{catSearch}</strong>&rdquo;.</p>
+          </div>
+        )}
+
+        {filtered.length === 0 && state.search && !catSearch && (
           <div className="empty-state">
             <p>No products match &ldquo;<strong>{state.search}</strong>&rdquo;.</p>
+          </div>
+        )}
+
+        {filtered.length === 0 && state.search && catSearch && (
+          <div className="empty-state">
+            <p>No results for &ldquo;<strong>{state.search}</strong>&rdquo; in &ldquo;<strong>{catSearch}</strong>&rdquo;.</p>
           </div>
         )}
 
