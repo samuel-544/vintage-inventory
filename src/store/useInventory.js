@@ -167,23 +167,35 @@ export function reducer(state, action) {
       }
     }
 
-    case 'RESTOCK': {
+    case 'RESTOCK':
+    case 'GOODS_RETURNED': {
       const div = state.divisions[state.division]
+      let updatedProduct = null
+      const newCats = div.categories.map(c =>
+        c.id !== action.catId ? c : {
+          ...c,
+          products: c.products.map(p => {
+            if (p.id !== action.prodId) return p
+            updatedProduct = { ...p, qty: p.qty + action.qty }
+            return updatedProduct
+          })
+        }
+      )
+      if (!updatedProduct) return state
       return {
         ...state,
-        divisions: {
-          ...state.divisions,
-          [state.division]: {
-            categories: div.categories.map(c =>
-              c.id !== action.catId ? c : {
-                ...c,
-                products: c.products.map(p =>
-                  p.id !== action.prodId ? p : { ...p, qty: p.qty + action.qty }
-                )
-              }
-            )
-          }
-        }
+        divisions: { ...state.divisions, [state.division]: { categories: newCats } },
+        log: [{
+          id: uid(),
+          productName: updatedProduct.name,
+          division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qtyDispatched: action.qty,
+          qtyRemaining: updatedProduct.qty,
+          source: action.type === 'GOODS_RETURNED' ? 'returned' : 'restock',
+          time: new Date().toLocaleString('en-KE', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+          })
+        }, ...state.log].slice(0, 100)
       }
     }
 
@@ -271,10 +283,22 @@ async function syncToSupabase(action, preState) {
       break
     }
 
-    case 'RESTOCK': {
+    case 'RESTOCK':
+    case 'GOODS_RETURNED': {
       const product = findProduct(preState, action.catId, action.prodId)
       if (!product) break
-      await supabase.from('products').update({ qty: product.qty + action.qty }).eq('id', action.prodId)
+      const newQty = product.qty + action.qty
+      await Promise.all([
+        supabase.from('products').update({ qty: newQty }).eq('id', action.prodId),
+        supabase.from('dispatch_log').insert({
+          product_id: action.prodId,
+          product_name: product.name,
+          division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qty_dispatched: action.qty,
+          qty_remaining: newQty,
+          source: action.type === 'GOODS_RETURNED' ? 'returned' : 'restock'
+        })
+      ])
       break
     }
   }

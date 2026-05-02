@@ -12,6 +12,8 @@
   --success: #2e7d52;
   --faulty: #b84a00;
   --faulty-light: #fdf1eb;
+  --returned: #0d7a6e;
+  --returned-light: #e6f6f4;
   --radius: 8px;
   --shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
@@ -30,6 +32,8 @@
     --success: #4caf7d;
     --faulty: #e06030;
     --faulty-light: #2d1508;
+    --returned: #2db8a8;
+    --returned-light: #0a2420;
   }
 }
 
@@ -348,12 +352,22 @@ input.input-error { border-color: var(--danger); }
   color: #fff;
 }
 
+.stock-in-toggles { display: flex; gap: 6px; flex-wrap: wrap; }
+
 .btn-restock-toggle {
   font-size: 12px;
   padding: 4px 10px;
   background: transparent;
   color: var(--success);
   border: 1px solid var(--success);
+}
+
+.btn-returned-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--returned);
+  border: 1px solid var(--returned);
 }
 
 .btn-display-toggle {
@@ -373,6 +387,12 @@ input.input-error { border-color: var(--danger); }
 .btn-restock {
   padding: 6px 12px;
   background: var(--success);
+  color: #fff;
+}
+
+.btn-returned {
+  padding: 6px 12px;
+  background: var(--returned);
   color: #fff;
 }
 
@@ -470,26 +490,27 @@ input.input-error { border-color: var(--danger); }
 
 .log-numbers { display: flex; gap: 10px; align-items: center; }
 .log-out { font-weight: 700; color: var(--danger); }
+.log-in  { font-weight: 700; color: var(--success); }
 .log-remaining { font-size: 13px; color: var(--text-muted); }
 .log-time { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 
-.log-display-badge {
+.log-badge {
   display: inline-block;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--accent);
-  background: var(--accent-light);
-  border: 1px solid var(--accent);
   border-radius: 4px;
   padding: 1px 5px;
   margin-left: 6px;
 }
+.log-badge-display  { color: var(--accent);   background: var(--accent-light);   border: 1px solid var(--accent); }
+.log-badge-restock  { color: var(--success);  background: transparent;           border: 1px solid var(--success); }
+.log-badge-returned { color: var(--returned); background: var(--returned-light); border: 1px solid var(--returned); }
 
-.log-entry-display {
-  border-color: var(--accent);
-}
+.log-entry-display  { border-color: var(--accent); }
+.log-entry-restock  { border-color: var(--success); }
+.log-entry-returned { border-color: var(--returned); }
 
 /* ── Reports Bar ── */
 .reports-bar {

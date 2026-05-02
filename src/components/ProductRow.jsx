@@ -3,11 +3,14 @@ import { useState } from 'react'
 export function ProductRow({ product, catId, dispatch }) {
   const [dispatchQty, setDispatchQty] = useState('')
   const [restockQty, setRestockQty] = useState('')
+  const [returnedQty, setReturnedQty] = useState('')
   const [displayDispatchQty, setDisplayDispatchQty] = useState('')
   const [dispatchError, setDispatchError] = useState('')
   const [restockError, setRestockError] = useState('')
+  const [returnedError, setReturnedError] = useState('')
   const [displayDispatchError, setDisplayDispatchError] = useState('')
   const [showRestock, setShowRestock] = useState(false)
+  const [showReturned, setShowReturned] = useState(false)
   const [showDisplayDispatch, setShowDisplayDispatch] = useState(false)
   const isLow = product.qty <= 5
 
@@ -27,6 +30,15 @@ export function ProductRow({ product, catId, dispatch }) {
     setRestockQty('')
     setRestockError('')
     setShowRestock(false)
+  }
+
+  function handleGoodsReturned() {
+    const qty = parseInt(returnedQty)
+    if (!qty || qty <= 0) { setReturnedError('Enter a valid quantity'); return }
+    dispatch({ type: 'GOODS_RETURNED', catId, prodId: product.id, qty })
+    setReturnedQty('')
+    setReturnedError('')
+    setShowReturned(false)
   }
 
   function handleDisplayDispatch() {
@@ -78,12 +90,54 @@ export function ProductRow({ product, catId, dispatch }) {
           {dispatchError && <span className="error-msg">{dispatchError}</span>}
         </div>
 
-        <button
-          className="btn-restock-toggle"
-          onClick={() => { setShowRestock(v => !v); setRestockError('') }}
-        >
-          {showRestock ? 'Cancel' : '+ Restock'}
-        </button>
+        <div className="stock-in-toggles">
+          <button
+            className="btn-restock-toggle"
+            onClick={() => { setShowRestock(v => !v); setShowReturned(false); setRestockError('') }}
+          >
+            {showRestock ? 'Cancel' : '+ Restock'}
+          </button>
+          <button
+            className="btn-returned-toggle"
+            onClick={() => { setShowReturned(v => !v); setShowRestock(false); setReturnedError('') }}
+          >
+            {showReturned ? 'Cancel' : '+ Returned'}
+          </button>
+        </div>
+
+        {showRestock && (
+          <div className="restock-area">
+            <input
+              type="number"
+              min="1"
+              placeholder="qty"
+              value={restockQty}
+              className={restockError ? 'input-error' : ''}
+              onChange={e => { setRestockQty(e.target.value); setRestockError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleRestock()}
+              autoFocus
+            />
+            <button className="btn-restock" onClick={handleRestock}>Confirm</button>
+            {restockError && <span className="error-msg">{restockError}</span>}
+          </div>
+        )}
+
+        {showReturned && (
+          <div className="restock-area">
+            <input
+              type="number"
+              min="1"
+              placeholder="qty"
+              value={returnedQty}
+              className={returnedError ? 'input-error' : ''}
+              onChange={e => { setReturnedQty(e.target.value); setReturnedError('') }}
+              onKeyDown={e => e.key === 'Enter' && handleGoodsReturned()}
+              autoFocus
+            />
+            <button className="btn-returned" onClick={handleGoodsReturned}>Confirm</button>
+            {returnedError && <span className="error-msg">{returnedError}</span>}
+          </div>
+        )}
 
         {product.display > 0 && (
           <button
@@ -108,23 +162,6 @@ export function ProductRow({ product, catId, dispatch }) {
             />
             <button className="btn-display-confirm" onClick={handleDisplayDispatch}>Confirm</button>
             {displayDispatchError && <span className="error-msg">{displayDispatchError}</span>}
-          </div>
-        )}
-
-        {showRestock && (
-          <div className="restock-area">
-            <input
-              type="number"
-              min="1"
-              placeholder="qty"
-              value={restockQty}
-              className={restockError ? 'input-error' : ''}
-              onChange={e => { setRestockQty(e.target.value); setRestockError('') }}
-              onKeyDown={e => e.key === 'Enter' && handleRestock()}
-              autoFocus
-            />
-            <button className="btn-restock" onClick={handleRestock}>Confirm</button>
-            {restockError && <span className="error-msg">{restockError}</span>}
           </div>
         )}
       </div>
