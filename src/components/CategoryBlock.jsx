@@ -6,6 +6,7 @@ export function CategoryBlock({ category, dispatch }) {
   const [prodName, setProdName] = useState('')
   const [prodQty, setProdQty] = useState('')
   const [prodDisplay, setProdDisplay] = useState('')
+  const [prodFaulty, setProdFaulty] = useState('')
   const [formError, setFormError] = useState('')
   const [showForm, setShowForm] = useState(false)
 
@@ -15,10 +16,13 @@ export function CategoryBlock({ category, dispatch }) {
     if (isNaN(qty) || qty < 0) { setFormError('Enter a valid stock count'); return }
     const display = prodDisplay === '' ? 0 : parseInt(prodDisplay)
     if (isNaN(display) || display < 0) { setFormError('Enter a valid display count'); return }
-    dispatch({ type: 'ADD_PRODUCT', catId: category.id, name: prodName.trim(), qty, low: 5, display })
+    const faulty = prodFaulty === '' ? 0 : parseInt(prodFaulty)
+    if (isNaN(faulty) || faulty < 0) { setFormError('Enter a valid faulty count'); return }
+    dispatch({ type: 'ADD_PRODUCT', catId: category.id, name: prodName.trim(), qty, low: 5, display, faulty })
     setProdName('')
     setProdQty('')
     setProdDisplay('')
+    setProdFaulty('')
     setFormError('')
     setShowForm(false)
   }
@@ -70,10 +74,17 @@ export function CategoryBlock({ category, dispatch }) {
                 value={prodDisplay}
                 onChange={e => { setProdDisplay(e.target.value); setFormError('') }}
               />
+              <input
+                type="number"
+                min="0"
+                placeholder="Faulty / incomplete (optional)"
+                value={prodFaulty}
+                onChange={e => { setProdFaulty(e.target.value); setFormError('') }}
+              />
               {formError && <span className="error-msg">{formError}</span>}
               <div className="form-buttons">
                 <button className="btn-add-product" onClick={handleAddProduct}>Add Product</button>
-                <button className="btn-cancel" onClick={() => { setShowForm(false); setFormError('') }}>Cancel</button>
+                <button className="btn-cancel" onClick={() => { setShowForm(false); setFormError(''); setProdFaulty('') }}>Cancel</button>
               </div>
             </div>
           ) : (

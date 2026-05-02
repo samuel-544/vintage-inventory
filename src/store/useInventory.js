@@ -69,7 +69,8 @@ export function reducer(state, action) {
                   qty: action.qty,
                   original: action.qty,
                   low: action.low,
-                  display: action.display || 0
+                  display: action.display || 0,
+                  faulty: action.faulty || 0
                 }]
               }
             )
@@ -225,7 +226,8 @@ async function syncToSupabase(action, preState) {
         qty: action.qty,
         original_qty: action.qty,
         low_threshold: action.low,
-        display_qty: action.display || 0
+        display_qty: action.display || 0,
+        faulty_qty: action.faulty || 0
       })
       break
 
@@ -360,7 +362,8 @@ export function useInventory() {
                 qty: p.qty,
                 original: p.original_qty,
                 low: p.low_threshold,
-                display: p.display_qty || 0
+                display: p.display_qty || 0,
+                faulty: p.faulty_qty || 0
               }))
           }))
       })

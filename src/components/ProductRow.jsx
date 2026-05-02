@@ -55,6 +55,12 @@ export function ProductRow({ product, catId, dispatch }) {
             <span className="qty-sub">on display</span>
           </>
         )}
+        {product.faulty > 0 && (
+          <>
+            <span className="qty-num faulty-qty">{product.faulty}</span>
+            <span className="qty-sub">faulty</span>
+          </>
+        )}
       </div>
 
       <div className="prod-actions">

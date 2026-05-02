@@ -10,6 +10,8 @@
   --danger: #c0392b;
   --danger-light: #fdf0ee;
   --success: #2e7d52;
+  --faulty: #b84a00;
+  --faulty-light: #fdf1eb;
   --radius: 8px;
   --shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
@@ -26,6 +28,8 @@
     --danger: #e05c4e;
     --danger-light: #2d1512;
     --success: #4caf7d;
+    --faulty: #e06030;
+    --faulty-light: #2d1508;
   }
 }
 
@@ -304,6 +308,11 @@ input.input-error { border-color: var(--danger); }
 .qty-num.display-qty {
   font-size: 16px;
   color: var(--accent);
+  margin-top: 6px;
+}
+.qty-num.faulty-qty {
+  font-size: 16px;
+  color: var(--faulty);
   margin-top: 6px;
 }
 

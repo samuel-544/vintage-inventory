@@ -15,6 +15,7 @@ create table if not exists products (
   original_qty  integer     not null default 0,
   low_threshold integer     not null default 5,
   display_qty   integer     not null default 0,
+  faulty_qty    integer     not null default 0,
   created_at    timestamptz default now()
 );
 
@@ -28,6 +29,9 @@ create table if not exists dispatch_log (
   source         text        not null default 'store',
   dispatched_at  timestamptz default now()
 );
+
+-- Run this if upgrading from a previous schema version:
+alter table products add column if not exists faulty_qty integer not null default 0;
 
 -- Allow full access (internal tool — no public auth needed)
 alter table categories   disable row level security;
