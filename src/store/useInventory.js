@@ -70,12 +70,126 @@ export function reducer(state, action) {
                   original: action.qty,
                   low: action.low,
                   display: action.display || 0,
-                  faulty: action.faulty || 0
+                  faulty: action.faulty || 0,
+                  reserved: 0
                 }]
               }
             )
           }
         }
+      }
+    }
+
+    case 'EDIT_PRODUCT': {
+      const div = state.divisions[state.division]
+      return {
+        ...state,
+        divisions: {
+          ...state.divisions,
+          [state.division]: {
+            categories: div.categories.map(c =>
+              c.id !== action.catId ? c : {
+                ...c,
+                products: c.products.map(p =>
+                  p.id !== action.prodId ? p : {
+                    ...p,
+                    name: action.name,
+                    qty: action.qty,
+                    display: action.display,
+                    faulty: action.faulty
+                  }
+                )
+              }
+            )
+          }
+        }
+      }
+    }
+
+    case 'RESERVE': {
+      const div = state.divisions[state.division]
+      let updatedProduct = null
+      const newCats = div.categories.map(c =>
+        c.id !== action.catId ? c : {
+          ...c,
+          products: c.products.map(p => {
+            if (p.id !== action.prodId) return p
+            updatedProduct = { ...p, reserved: p.reserved + action.qty }
+            return updatedProduct
+          })
+        }
+      )
+      if (!updatedProduct) return state
+      return {
+        ...state,
+        divisions: { ...state.divisions, [state.division]: { categories: newCats } },
+        log: [{
+          id: uid(),
+          productName: updatedProduct.name,
+          division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qtyDispatched: action.qty,
+          qtyRemaining: updatedProduct.qty,
+          source: 'reserved',
+          time: new Date().toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        }, ...state.log].slice(0, 100)
+      }
+    }
+
+    case 'COLLECT_RESERVATION': {
+      const div = state.divisions[state.division]
+      let updatedProduct = null
+      const newCats = div.categories.map(c =>
+        c.id !== action.catId ? c : {
+          ...c,
+          products: c.products.map(p => {
+            if (p.id !== action.prodId) return p
+            updatedProduct = { ...p, qty: p.qty - action.qty, reserved: p.reserved - action.qty }
+            return updatedProduct
+          })
+        }
+      )
+      if (!updatedProduct) return state
+      return {
+        ...state,
+        divisions: { ...state.divisions, [state.division]: { categories: newCats } },
+        log: [{
+          id: uid(),
+          productName: updatedProduct.name,
+          division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qtyDispatched: action.qty,
+          qtyRemaining: updatedProduct.qty,
+          source: 'collected',
+          time: new Date().toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        }, ...state.log].slice(0, 100)
+      }
+    }
+
+    case 'CANCEL_RESERVATION': {
+      const div = state.divisions[state.division]
+      let updatedProduct = null
+      const newCats = div.categories.map(c =>
+        c.id !== action.catId ? c : {
+          ...c,
+          products: c.products.map(p => {
+            if (p.id !== action.prodId) return p
+            updatedProduct = { ...p, reserved: p.reserved - action.qty }
+            return updatedProduct
+          })
+        }
+      )
+      if (!updatedProduct) return state
+      return {
+        ...state,
+        divisions: { ...state.divisions, [state.division]: { categories: newCats } },
+        log: [{
+          id: uid(),
+          productName: updatedProduct.name,
+          division: state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qtyDispatched: action.qty,
+          qtyRemaining: updatedProduct.reserved,
+          source: 'cancelled',
+          time: new Date().toLocaleString('en-KE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        }, ...state.log].slice(0, 100)
       }
     }
 
@@ -247,6 +361,15 @@ async function syncToSupabase(action, preState) {
       await supabase.from('products').delete().eq('id', action.prodId)
       break
 
+    case 'EDIT_PRODUCT':
+      await supabase.from('products').update({
+        name: action.name,
+        qty: action.qty,
+        display_qty: action.display,
+        faulty_qty: action.faulty
+      }).eq('id', action.prodId)
+      break
+
     case 'DISPATCH': {
       const product = findProduct(preState, action.catId, action.prodId)
       if (!product) break
@@ -297,6 +420,61 @@ async function syncToSupabase(action, preState) {
           qty_dispatched: action.qty,
           qty_remaining: newQty,
           source: action.type === 'GOODS_RETURNED' ? 'returned' : 'restock'
+        })
+      ])
+      break
+    }
+
+    case 'RESERVE': {
+      const product = findProduct(preState, action.catId, action.prodId)
+      if (!product) break
+      const newReserved = product.reserved + action.qty
+      await Promise.all([
+        supabase.from('products').update({ reserved_qty: newReserved }).eq('id', action.prodId),
+        supabase.from('dispatch_log').insert({
+          product_id: action.prodId,
+          product_name: product.name,
+          division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qty_dispatched: action.qty,
+          qty_remaining: product.qty,
+          source: 'reserved'
+        })
+      ])
+      break
+    }
+
+    case 'COLLECT_RESERVATION': {
+      const product = findProduct(preState, action.catId, action.prodId)
+      if (!product) break
+      const newQty = product.qty - action.qty
+      const newReserved = product.reserved - action.qty
+      await Promise.all([
+        supabase.from('products').update({ qty: newQty, reserved_qty: newReserved }).eq('id', action.prodId),
+        supabase.from('dispatch_log').insert({
+          product_id: action.prodId,
+          product_name: product.name,
+          division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qty_dispatched: action.qty,
+          qty_remaining: newQty,
+          source: 'collected'
+        })
+      ])
+      break
+    }
+
+    case 'CANCEL_RESERVATION': {
+      const product = findProduct(preState, action.catId, action.prodId)
+      if (!product) break
+      const newReserved = product.reserved - action.qty
+      await Promise.all([
+        supabase.from('products').update({ reserved_qty: newReserved }).eq('id', action.prodId),
+        supabase.from('dispatch_log').insert({
+          product_id: action.prodId,
+          product_name: product.name,
+          division: preState.division === 'vintage' ? 'Vintage Lighting' : 'Incredible',
+          qty_dispatched: action.qty,
+          qty_remaining: newReserved,
+          source: 'cancelled'
         })
       ])
       break
@@ -387,7 +565,8 @@ export function useInventory() {
                 original: p.original_qty,
                 low: p.low_threshold,
                 display: p.display_qty || 0,
-                faulty: p.faulty_qty || 0
+                faulty: p.faulty_qty || 0,
+                reserved: p.reserved_qty || 0
               }))
           }))
       })

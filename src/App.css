@@ -14,6 +14,9 @@
   --faulty-light: #fdf1eb;
   --returned: #0d7a6e;
   --returned-light: #e6f6f4;
+  --reserved: #6d4c9e;
+  --reserved-light: #f0ecf8;
+  --collected: #b5793a;
   --radius: 8px;
   --shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
@@ -34,6 +37,9 @@
     --faulty-light: #2d1508;
     --returned: #2db8a8;
     --returned-light: #0a2420;
+    --reserved: #a47fd4;
+    --reserved-light: #1e1528;
+    --collected: #d4945a;
   }
 }
 
@@ -404,14 +410,29 @@ input.input-error { border-color: var(--danger); }
   border: 1px solid var(--border);
 }
 
+.row-end-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+.btn-edit {
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+.btn-edit:hover { color: var(--reserved); border-color: var(--reserved); }
+
 .btn-remove {
   padding: 4px 8px;
   background: transparent;
   color: var(--text-muted);
   font-size: 12px;
   border: 1px solid var(--border);
-  align-self: flex-start;
-  margin-left: auto;
 }
 .btn-remove:hover { color: var(--danger); border-color: var(--danger); }
 
@@ -618,3 +639,108 @@ input.input-error { border-color: var(--danger); }
   .add-cat-row { flex-direction: column; }
   .log-entry { gap: 8px; }
 }
+
+/* ── Reserved qty ── */
+.qty-num.reserved-qty {
+  font-size: 16px;
+  color: var(--reserved);
+  margin-top: 6px;
+}
+
+/* ── Reservation action buttons ── */
+.btn-reserve-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--reserved);
+  border: 1px solid var(--reserved);
+}
+
+.btn-collect-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--collected);
+  border: 1px solid var(--collected);
+}
+
+.btn-cancel-res-toggle {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.btn-reserve {
+  padding: 6px 12px;
+  background: var(--reserved);
+  color: #fff;
+}
+
+.btn-collect {
+  padding: 6px 12px;
+  background: var(--collected);
+  color: #fff;
+}
+
+.btn-cancel-res {
+  padding: 6px 12px;
+  background: var(--text-muted);
+  color: #fff;
+}
+
+/* ── Edit product form ── */
+.product-edit-form {
+  background: var(--reserved-light);
+  border: 1px solid var(--reserved);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 2px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-form-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--reserved);
+}
+
+.edit-form-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.edit-form-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.edit-form-fields input { width: 100%; }
+
+.btn-save-edit {
+  padding: 7px 16px;
+  background: var(--reserved);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* ── Log badges — reservation sources ── */
+.log-badge-reserved  { color: var(--reserved);  background: var(--reserved-light);  border: 1px solid var(--reserved); }
+.log-badge-collected { color: var(--collected);  background: var(--accent-light);    border: 1px solid var(--collected); }
+.log-badge-cancelled { color: var(--text-muted); background: transparent;            border: 1px solid var(--border); }
+
+.log-entry-reserved  { border-color: var(--reserved); }
+.log-entry-collected { border-color: var(--collected); }
+
+.log-neutral { font-weight: 700; color: var(--reserved); }

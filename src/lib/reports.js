@@ -9,7 +9,7 @@ export function generateStockReport(state) {
 
   for (const [divKey, divData] of Object.entries(state.divisions)) {
     const divName = divKey === 'vintage' ? 'Vintage Lighting' : 'Incredible'
-    const rows = [['Category', 'Product', 'Store Stock', 'Display Pieces', 'Original Stock', 'Status']]
+    const rows = [['Category', 'Product', 'Store Stock', 'Reserved', 'Display Pieces', 'Faulty', 'Original Stock', 'Status']]
 
     for (const cat of divData.categories) {
       for (const prod of cat.products) {
@@ -17,7 +17,9 @@ export function generateStockReport(state) {
           cat.name,
           prod.name,
           prod.qty,
+          prod.reserved || 0,
           prod.display || 0,
+          prod.faulty || 0,
           prod.original,
           prod.qty <= 5 ? 'LOW STOCK' : 'OK'
         ])
@@ -29,7 +31,9 @@ export function generateStockReport(state) {
       { wch: 26 },
       { wch: 30 },
       { wch: 13 },
+      { wch: 10 },
       { wch: 15 },
+      { wch: 8 },
       { wch: 15 },
       { wch: 12 },
     ]
@@ -46,12 +50,22 @@ export function generateDispatchReport(log) {
   const wb = XLSX.utils.book_new()
   const rows = [['Date / Time', 'Product', 'Division', 'Source', 'Qty Dispatched', 'Qty Remaining']]
 
+  const sourceLabel = {
+    store:     'Store Dispatch',
+    display:   'Display Item',
+    restock:   'Restock',
+    returned:  'Goods Returned',
+    reserved:  'Reserved',
+    collected: 'Collected (Reserved)',
+    cancelled: 'Reservation Cancelled'
+  }
+
   for (const entry of log) {
     rows.push([
       entry.time,
       entry.productName,
       entry.division,
-      entry.source === 'display' ? 'Display Item' : 'Store',
+      sourceLabel[entry.source] || entry.source,
       entry.qtyDispatched,
       entry.qtyRemaining
     ])

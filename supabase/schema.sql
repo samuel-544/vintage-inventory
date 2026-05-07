@@ -31,7 +31,8 @@ create table if not exists dispatch_log (
 );
 
 -- Run this if upgrading from a previous schema version:
-alter table products add column if not exists faulty_qty integer not null default 0;
+alter table products add column if not exists faulty_qty    integer not null default 0;
+alter table products add column if not exists reserved_qty  integer not null default 0;
 
 -- Allow full access (internal tool — no public auth needed)
 alter table categories   disable row level security;
