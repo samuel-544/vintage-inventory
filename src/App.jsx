@@ -4,6 +4,7 @@ import { StatsBar } from './components/StatsBar'
 import { CategoryBlock } from './components/CategoryBlock'
 import { DispatchLog } from './components/DispatchLog'
 import { ReportsBar } from './components/ReportsBar'
+import { ClientWatchlist } from './components/ClientWatchlist'
 import './App.css'
 
 function SearchIcon() {
@@ -127,6 +128,8 @@ export default function App() {
         </div>
 
         <ReportsBar state={state} />
+
+        <ClientWatchlist state={state} dispatch={dispatch} />
 
         {filtered.length === 0 && !state.search && !catSearch && (
           <div className="empty-state">

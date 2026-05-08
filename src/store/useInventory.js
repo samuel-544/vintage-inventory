@@ -9,6 +9,7 @@ export const initialState = {
     incredible: { categories: [] }
   },
   log: [],
+  watchlists: [],
   search: ''
 }
 
@@ -192,6 +193,20 @@ export function reducer(state, action) {
         }, ...state.log].slice(0, 100)
       }
     }
+
+    case 'ADD_WATCHLIST':
+      return { ...state, watchlists: [action.watchlist, ...(state.watchlists || [])] }
+
+    case 'CLOSE_WATCHLIST':
+      return {
+        ...state,
+        watchlists: (state.watchlists || []).map(w =>
+          w.id === action.id ? { ...w, status: 'closed' } : w
+        )
+      }
+
+    case 'DELETE_WATCHLIST':
+      return { ...state, watchlists: (state.watchlists || []).filter(w => w.id !== action.id) }
 
     case 'DELETE_PRODUCT': {
       const div = state.divisions[state.division]
@@ -479,6 +494,24 @@ async function syncToSupabase(action, preState) {
       ])
       break
     }
+
+    case 'ADD_WATCHLIST':
+      await supabase.from('client_watchlists').insert({
+        id: action.watchlist.id,
+        client_name: action.watchlist.clientName,
+        phone: action.watchlist.phone,
+        items: action.watchlist.items,
+        status: 'active'
+      })
+      break
+
+    case 'CLOSE_WATCHLIST':
+      await supabase.from('client_watchlists').update({ status: 'closed' }).eq('id', action.id)
+      break
+
+    case 'DELETE_WATCHLIST':
+      await supabase.from('client_watchlists').delete().eq('id', action.id)
+      break
   }
 }
 
@@ -571,6 +604,25 @@ export function useInventory() {
           }))
       })
 
+      // Load watchlists separately — table may not exist yet on first deploy
+      let watchlistData = []
+      try {
+        const { data: wl } = await supabase
+          .from('client_watchlists')
+          .select('*')
+          .order('created_at', { ascending: false })
+        if (wl) {
+          watchlistData = wl.map(w => ({
+            id: w.id,
+            clientName: w.client_name,
+            phone: w.phone,
+            items: w.items || [],
+            status: w.status,
+            createdAt: w.created_at
+          }))
+        }
+      } catch (_) { /* table not created yet */ }
+
       dispatch({
         type: 'SET_STATE',
         state: {
@@ -590,6 +642,7 @@ export function useInventory() {
               day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
             })
           })),
+          watchlists: watchlistData,
           search: ''
         }
       })
