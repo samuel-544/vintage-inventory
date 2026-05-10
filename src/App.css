@@ -250,6 +250,18 @@ input.input-error { border-color: var(--danger); }
   padding: 1px 8px;
 }
 
+.btn-export-cat {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: transparent;
+  color: #1A5276;
+  border: 1px solid #1A5276;
+}
+.btn-export-cat:hover {
+  background: #1A5276;
+  color: #fff;
+}
+
 .btn-delete-cat {
   padding: 4px 10px;
   font-size: 12px;

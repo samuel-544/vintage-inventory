@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ProductRow } from './ProductRow'
+import { generateCategoryReport, exportAndShare } from '../lib/reports'
 
-export function CategoryBlock({ category, dispatch }) {
+export function CategoryBlock({ category, divisionName, dispatch }) {
   const [open, setOpen] = useState(true)
   const [prodName, setProdName] = useState('')
   const [prodQty, setProdQty] = useState('')
@@ -34,6 +35,13 @@ export function CategoryBlock({ category, dispatch }) {
           <span className="cat-chevron">{open ? '▾' : '▸'}</span>
           <span className="cat-name">{category.name}</span>
           <span className="cat-count">{category.products.length}</span>
+        </button>
+        <button
+          className="btn-export-cat"
+          onClick={() => exportAndShare(generateCategoryReport(category, divisionName))}
+          title="Export this category to Excel"
+        >
+          Export
         </button>
         <button
           className="btn-delete-cat"

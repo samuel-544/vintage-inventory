@@ -159,7 +159,12 @@ export default function App() {
         )}
 
         {filtered.map(cat => (
-          <CategoryBlock key={cat.id} category={cat} dispatch={dispatch} />
+          <CategoryBlock
+            key={cat.id}
+            category={cat}
+            divisionName={state.division === 'vintage' ? 'Vintage Lighting' : 'Incredible'}
+            dispatch={dispatch}
+          />
         ))}
 
         <DispatchLog entries={state.log} />
