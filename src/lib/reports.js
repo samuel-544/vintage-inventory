@@ -10,8 +10,7 @@ const C = {
   altRow:     'F2F3F4',
   white:      'FFFFFF',
   status: {
-    CRITICAL:     { bg: 'C0392B', text: 'FFFFFF' },
-    'LOW STOCK':  { bg: 'E67E22', text: 'FFFFFF' },
+    'LOW STOCK':  { bg: 'C0392B', text: 'FFFFFF' },
     'IN STOCK':   { bg: '1E8449', text: 'FFFFFF' },
     'HIGH STOCK': { bg: '1A5276', text: 'FFFFFF' },
   },
@@ -32,8 +31,7 @@ function dateTag() {
 }
 
 function statusLabel(qty) {
-  if (qty <= 5)   return 'CRITICAL'
-  if (qty <= 50)  return 'LOW STOCK'
+  if (qty <= 5)   return 'LOW STOCK'
   if (qty <= 300) return 'IN STOCK'
   return 'HIGH STOCK'
 }
