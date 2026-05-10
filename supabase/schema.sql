@@ -16,6 +16,7 @@ create table if not exists products (
   low_threshold integer     not null default 5,
   display_qty   integer     not null default 0,
   faulty_qty    integer     not null default 0,
+  reserved_qty  integer     not null default 0,
   created_at    timestamptz default now()
 );
 
@@ -34,7 +35,17 @@ create table if not exists dispatch_log (
 alter table products add column if not exists faulty_qty    integer not null default 0;
 alter table products add column if not exists reserved_qty  integer not null default 0;
 
+create table if not exists client_watchlists (
+  id          text        primary key,
+  client_name text        not null,
+  phone       text        not null,
+  items       jsonb       not null default '[]',
+  status      text        not null default 'active',
+  created_at  timestamptz default now()
+);
+
 -- Allow full access (internal tool — no public auth needed)
-alter table categories   disable row level security;
-alter table products     disable row level security;
-alter table dispatch_log disable row level security;
+alter table categories        disable row level security;
+alter table products          disable row level security;
+alter table dispatch_log      disable row level security;
+alter table client_watchlists disable row level security;
