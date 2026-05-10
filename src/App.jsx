@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useInventory } from './store/useInventory'
+import { useNotifications } from './store/useNotifications'
 import { StatsBar } from './components/StatsBar'
 import { CategoryBlock } from './components/CategoryBlock'
 import { DispatchLog } from './components/DispatchLog'
@@ -18,6 +19,7 @@ function SearchIcon() {
 
 export default function App() {
   const { state, dispatch, loading, loadingMsg, syncError } = useInventory()
+  useNotifications(state, loading)
   const [newCatName, setNewCatName] = useState('')
   const [catSearch, setCatSearch] = useState('')
   const currentDiv = state.divisions[state.division]
